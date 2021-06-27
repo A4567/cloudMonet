@@ -259,3 +259,8 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+addons.make
+cloudMonet.sln
+cloudMonet.vcxproj.filters
+icon.rc
+cloudMonet.vcxproj
