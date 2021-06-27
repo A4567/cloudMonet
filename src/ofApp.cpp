@@ -4,6 +4,7 @@
 void ofApp::setup()
 {
 	loadNewImage("cloud3.jpg");
+	setupGUI();
 
 }
 
@@ -16,6 +17,7 @@ void ofApp::update()
 //--------------------------------------------------------------
 void ofApp::draw()
 {
+
 	if (b_drawImg) 
 	{
 		originalImg.draw(0, 0);
@@ -46,6 +48,9 @@ void ofApp::draw()
 		<< "threshold " << threshold << " (press: +/-)" << endl
 		<< "num blobs found " << contourFinder.nBlobs << ", fps: " << ofGetFrameRate();
 	ofDrawBitmapString(reportStr.str(), 20, 600);
+
+	GUI.draw();
+
 }
 
 //--------------------------------------------------------------
@@ -58,10 +63,13 @@ void ofApp::keyPressed(int key){
 	case '=':
 		threshold++;
 		if (threshold > 255) threshold = 255;
+		sl_threshold = threshold;
 		break;
 	case '-':
 		threshold--;
 		if (threshold < 0) threshold = 0;
+		sl_threshold = threshold;
+
 		break;
 	case 'l':
 		ofFileDialogResult result = ofSystemLoadDialog("Load file");
@@ -144,6 +152,7 @@ void ofApp::loadNewImage(string newImgPath)
 
 	bLearnBakground = true;
 	threshold = 200;
+	sl_threshold = 200;
 	b_drawImg = true;
 
 
@@ -173,6 +182,7 @@ void ofApp::loadNewImage(string newImgPath)
 
 void ofApp::findContours()
 {
+	threshold = sl_threshold;
 	bool bNewFrame = false;
 
 
@@ -201,3 +211,10 @@ void ofApp::findContours()
 
 	}
 }
+
+void ofApp::setupGUI()
+{
+	GUI.setup();
+	GUI.add(sl_threshold.setup("Threshold", 200, 0, 255));
+}
+

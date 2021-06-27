@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxOpenCv.h"
+#include "ofxGui.h"
 
 class ofApp : public ofBaseApp{
 
@@ -23,11 +24,16 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
 
-		//____________________________________________________________________ CUSTOM FUNCTIONS
+		////-------------------------------------------------------------------------- CUSTOM FUNCTIONS START
 
+		void setupGUI();
+		
 		void loadNewImage(string newImgPath);
 		void findContours();
 		
+		////-------------------------------------------------------------------------- CUSTOM FUNCTIONS END
+
+
 		//ofPolyline line;
 
 		ofVideoGrabber vimg;
@@ -44,6 +50,14 @@ class ofApp : public ofBaseApp{
 		ofxCvContourFinder 	contourFinder;
 
 		int 				threshold;
+
 		bool				bLearnBakground, b_drawImg;
+
+		//-------------------------------------------------------------------------- GUI 
+		ofxPanel			GUI;
+		ofxIntSlider		sl_threshold;
+
+
+
 
 };
