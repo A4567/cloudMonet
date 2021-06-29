@@ -3,8 +3,17 @@
 //--------------------------------------------------------------
 void ofApp::setup()
 {
-	loadNewImage("cloud3.jpg");
+	vimg.setup(1280, 960);
+	currentImagePath = "cloud3.jpg";
+	loadNewImage(currentImagePath);
+	
+
+
+
 	setupGUI();
+	ofFill();
+	isCamera = false;
+	
 
 }
 
@@ -20,24 +29,90 @@ void ofApp::draw()
 
 	if (b_drawImg) 
 	{
-		originalImg.draw(0, 0);
+		if (isCamera)
+		{
+			vimg.draw(0, 0);
+		}
+		else
+		{
+			originalImg.draw(0, 0);
+
+		}
 	}
 		
 
+	
 	for (int i = 0; i < contourFinder.nBlobs; i++) 
 	{
 		//contourFinder.blobs[i].draw(0, 0);
 		ofSetColor(0);
-		ofSetLineWidth(5);
+		ofSetLineWidth(sl_lineThickness);
 		ofPolyline line;
 
-		for (int k = 0; k < contourFinder.blobs[i].pts.size(); k++) 
+
+		if (contourFinder.nBlobs > blobColour.size())
 		{
+			//blobColour.push_back(ofColor(ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)));
+			blobColour.push_back(ofColor(255, 0, 0 ,130));
+
+		}
+		
+		if (!tg_lines)
+		{
+		
+			ofSetColor(blobColour[i]);
+
+		}
+	
+
+		for (int k = 0; k < contourFinder.blobs[i].pts.size(); k += sl_smoothness)
+		{
+
 			line.curveTo(contourFinder.blobs[i].pts[k]);
+
+
+
 		}
 
 		line.close();
 		line.draw();
+		
+	
+		
+		ofBeginShape();
+		ofSetColor(blobColour[i]);
+
+		for (int i = 0; i < line.getVertices().size(); i++) 
+		{
+			ofVertex(line.getVertices().at(i).x, line.getVertices().at(i).y);
+		}
+		ofEndShape();
+
+		if (tg_eyes)
+		{
+			if (contourFinder.blobs[i].area > sl_minArea)
+			{
+				
+				ofSetColor(0, 0, 0);
+				ofDrawCircle(contourFinder.blobs[i].centroid.x - 30, contourFinder.blobs[i].centroid.y, 20);
+				ofDrawCircle(contourFinder.blobs[i].centroid.x + 30, contourFinder.blobs[i].centroid.y, 20);
+
+				ofSetColor(255, 255, 255);
+				ofDrawCircle(contourFinder.blobs[i].centroid.x - 30, contourFinder.blobs[i].centroid.y, 15);
+				ofDrawCircle(contourFinder.blobs[i].centroid.x + 30, contourFinder.blobs[i].centroid.y, 15);
+
+				ofSetColor(0, 0, 0);
+
+				ofDrawCircle(contourFinder.blobs[i].centroid.x, contourFinder.blobs[i].centroid.y + 40, 15);
+
+				ofDrawCircle(contourFinder.blobs[i].centroid.x - ofRandom(27, 33), contourFinder.blobs[i].centroid.y, 10);
+				ofDrawCircle(contourFinder.blobs[i].centroid.x + ofRandom(27, 33), contourFinder.blobs[i].centroid.y, 10);
+
+
+
+			}
+		}
+		
 	}
 	
 	// finally, a report:
@@ -54,29 +129,65 @@ void ofApp::draw()
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key){
-	switch (key) {
+void ofApp::keyPressed(int key)
+{
+	switch (key) 
+	{
 	case ' ':
 		bLearnBakground = true;
 		b_drawImg = !b_drawImg;
+		blobColour.clear();
+
 		break;
+
 	case '=':
 		threshold++;
 		if (threshold > 255) threshold = 255;
 		sl_threshold = threshold;
 		break;
+
 	case '-':
 		threshold--;
 		if (threshold < 0) threshold = 0;
 		sl_threshold = threshold;
 
 		break;
-	case 'l':
-		ofFileDialogResult result = ofSystemLoadDialog("Load file");
-		if (result.bSuccess) 
+
+	case 't':
+		
+		isCamera = !isCamera;
+		if (isCamera)
 		{
-			loadNewImage(result.getPath());
+			sl_threshold = 40;
+			sl_smoothness = 53;
+			
 		}
+		else
+		{
+			sl_threshold = 200;
+			sl_smoothness = 112;
+		}
+		loadNewImage(currentImagePath);
+		
+		break;
+
+	case 'l':
+		
+		if (!isCamera)
+		{
+			ofFileDialogResult result = ofSystemLoadDialog("Load file");
+			if (result.bSuccess)
+			{
+				currentImagePath = result.getPath();
+				loadNewImage(currentImagePath);
+				
+			}
+		}
+			
+		
+		break;
+
+
 	}
 }
 
@@ -117,6 +228,7 @@ void ofApp::mouseExited(int x, int y){
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
+	img.resize(ofGetWidth(), ofGetHeight());
 
 }
 
@@ -134,25 +246,38 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 void ofApp::loadNewImage(string newImgPath)
 {
-	img.clear();
+	if (!isCamera)
+	{
+		img.clear();
 
-	img.load(newImgPath);
-	vimg.setup(1280, 960);
+		img.load(newImgPath);
+		img.resize(ofGetWidth(), ofGetHeight());
 
-	pix = img.getPixels();
-	blackPix = img.getPixels();
+		pix = img.getPixels();
+		blackPix = img.getPixels();
+		originalImg.setFromPixels(img.getPixels());
 
-	originalImg.setFromPixels(img.getPixels());
+		colorImg.allocate(img.getWidth(), img.getHeight());
+		grayImage.allocate(img.getWidth(), img.getHeight());
+		grayBg.allocate(img.getWidth(), img.getHeight());
+		grayDiff.allocate(img.getWidth(), img.getHeight());
+	}
+	else
+	{
+		
 
+		pix = vimg.getPixels();
+		blackPix = vimg.getPixels();
+		originalImg.setFromPixels(vimg.getPixels());
 
-	colorImg.allocate(img.getWidth(), img.getHeight());
-	grayImage.allocate(img.getWidth(), img.getHeight());
-	grayBg.allocate(img.getWidth(), img.getHeight());
-	grayDiff.allocate(img.getWidth(), img.getHeight());
+		colorImg.allocate(vimg.getWidth(), vimg.getHeight());
+		grayImage.allocate(vimg.getWidth(), vimg.getHeight());
+		grayBg.allocate(vimg.getWidth(), vimg.getHeight());
+		grayDiff.allocate(vimg.getWidth(), vimg.getHeight());
+	}
+
 
 	bLearnBakground = true;
-	threshold = 200;
-	sl_threshold = 200;
 	b_drawImg = true;
 
 
@@ -162,22 +287,30 @@ void ofApp::loadNewImage(string newImgPath)
 		{
 			colour = pix.getColor(i, j);
 			ofColor white(200, 200, 200);
-
+			/*
 			if ((colour.r < (colour.b - (colour.b / 3))) && (colour.g < (colour.b - (colour.b / 3))) && (colour.b < white.b)) {
 				pix.setColor(i, j, ofColor(0, 0, 0));
 			}
+			
 
 			else 
 			{
 				//pix.setColor(i, j, ofColor(255, 255, 255));
 			}
+			*/
 
 			blackPix.setColor(i, j, ofColor(0, 0, 0));
 		}
 	}
 
-	img.setFromPixels(pix);
-	blackImg.setFromPixels(blackPix);
+	if (!isCamera)
+	{
+		img.setFromPixels(pix);
+		blackImg.setFromPixels(blackPix);
+	}
+
+
+
 }
 
 void ofApp::findContours()
@@ -187,10 +320,36 @@ void ofApp::findContours()
 
 
 	vimg.update();
+
 	bNewFrame = vimg.isFrameNew();
-	if (bNewFrame) {
+
+	if (isCamera)
+	{
+		if (bNewFrame)
+		{
+
+			colorImg.setFromPixels(vimg.getPixels());
 
 
+			grayImage = colorImg;
+			if (bLearnBakground == true) {
+				grayBg = grayImage;		// the = sign copys the pixels from grayImage into grayBg (operator overloading)
+				bLearnBakground = false;
+			}
+
+			// take the abs value of the difference between background and incoming and then threshold:
+			grayDiff.absDiff(grayBg, grayImage);
+			grayDiff.threshold(threshold);
+
+			// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
+			// also, find holes is set to true so we will get interior contours as well....
+			//contourFinder.findContours(grayDiff, 20, (1280 * 960) / 2, 10, true);	// find holes
+		}
+			
+		
+	}
+	else
+	{
 		colorImg.setFromPixels(img.getPixels());
 		bgImg.setFromPixels(blackImg.getPixels());
 
@@ -207,14 +366,27 @@ void ofApp::findContours()
 
 		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
 		// also, find holes is set to true so we will get interior contours as well....
-		contourFinder.findContours(grayDiff, 20, (img.getWidth() * img.getHeight()) / 2, 99, true);	// find holes
-
+		//contourFinder.findContours(grayDiff, 20, (img.getWidth() * img.getHeight()) / 2, 99, true);	// find holes
 	}
+
+	contourFinder.findContours(grayDiff, sl_minArea, sl_maxArea, sl_maxBlobs, tg_holes);	// find holes
+
 }
 
 void ofApp::setupGUI()
 {
 	GUI.setup();
 	GUI.add(sl_threshold.setup("Threshold", 200, 0, 255));
+	GUI.add(sl_smoothness.setup("Smoothness", 1, 1, 500));
+	GUI.add(sl_minArea.setup("Min Area", 20, 0, 10000));
+	GUI.add(sl_maxArea.setup("Max Area", 10001, 10001, ofGetWidth() * ofGetHeight()));
+	GUI.add(sl_maxBlobs.setup("Max Blobs", 50, 0, 100));
+	GUI.add(sl_lineThickness.setup("Line Thickness", 5, 0, 50));
+
+	GUI.add(tg_holes.setup("Find Holes?", false));
+	GUI.add(tg_lines.setup("Draw Lines?", false));
+	GUI.add(tg_eyes.setup("Draw Eyes?", false));
+
+
 }
 

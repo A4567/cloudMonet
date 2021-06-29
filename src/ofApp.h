@@ -37,7 +37,7 @@ class ofApp : public ofBaseApp{
 		//ofPolyline line;
 
 		ofVideoGrabber vimg;
-		ofImage img, blackImg, originalImg;
+		ofImage img, blackImg, originalImg, eyes;
 		ofPixels pix, blackPix;
 		ofColor colour;
 
@@ -50,12 +50,27 @@ class ofApp : public ofBaseApp{
 		ofxCvContourFinder 	contourFinder;
 
 		int 				threshold;
-
 		bool				bLearnBakground, b_drawImg;
+		bool				isCamera;
+		string				currentImagePath;
+		std::vector<ofColor>			blobColour;
 
 		//-------------------------------------------------------------------------- GUI 
 		ofxPanel			GUI;
+
 		ofxIntSlider		sl_threshold;
+		ofxIntSlider		sl_smoothness;
+		ofxIntSlider		sl_minArea;
+		ofxIntSlider		sl_maxArea;
+		ofxIntSlider		sl_maxBlobs;
+		ofxIntSlider		sl_lineThickness;
+
+		ofxToggle			tg_holes;
+		ofxToggle			tg_lines;
+		ofxToggle			tg_eyes;
+
+
+
 
 
 
