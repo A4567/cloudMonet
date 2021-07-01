@@ -13,6 +13,12 @@ void ofApp::setup()
 	setupGUI();
 	ofFill();
 	isCamera = false;
+
+	bTimerReached = false;
+	startTime = ofGetElapsedTimeMillis();  // get the start time
+	endTime = (int)500; // in milliseconds
+
+	ofSetBackgroundAuto(false);
 	
 
 }
@@ -26,6 +32,22 @@ void ofApp::update()
 //--------------------------------------------------------------
 void ofApp::draw()
 {
+	// update the timer this frame
+	float timer = ofGetElapsedTimeMillis() - startTime;
+
+	if (tg_timer)
+	{
+		threshold = (ofGetElapsedTimeMillis() - startTime) / sl_timerSpeed;
+		sl_threshold = threshold;
+
+		if (threshold > 255)
+		{
+			startTime = ofGetElapsedTimeMillis();
+			threshold = 0;
+		}
+	}
+
+
 
 	if (b_drawImg) 
 	{
@@ -52,8 +74,8 @@ void ofApp::draw()
 
 		if (contourFinder.nBlobs > blobColour.size())
 		{
-			//blobColour.push_back(ofColor(ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)));
-			blobColour.push_back(ofColor(255, 0, 0 ,130));
+			blobColour.push_back(ofColor(ofRandom(0, 255), ofRandom(0, 255), ofRandom(0, 255)));
+			//blobColour.push_back(ofColor(255, 0, 0 ,130));
 
 		}
 		
@@ -125,6 +147,13 @@ void ofApp::draw()
 	ofDrawBitmapString(reportStr.str(), 20, 600);
 
 	GUI.draw();
+
+	string  info = "FPS:        " + ofToString(ofGetFrameRate(), 0) + "\n";
+	info += "Start Time: " + ofToString(startTime, 1) + "\n";
+	info += "End Time:   " + ofToString(endTime / 1000.0, 1) + " seconds\n";
+	info += "Timer:      " + ofToString(timer / 1000.0, 1) + " seconds\n";
+	info += "\nPress ' ' to get a new random end time\n";
+	ofDrawBitmapString(info, 20, 400);
 
 }
 
@@ -382,10 +411,14 @@ void ofApp::setupGUI()
 	GUI.add(sl_maxArea.setup("Max Area", 10001, 10001, ofGetWidth() * ofGetHeight()));
 	GUI.add(sl_maxBlobs.setup("Max Blobs", 50, 0, 100));
 	GUI.add(sl_lineThickness.setup("Line Thickness", 5, 0, 50));
+	GUI.add(sl_timerSpeed.setup("Timer Delay (ms)", 250, 1, 250));
+
 
 	GUI.add(tg_holes.setup("Find Holes?", false));
 	GUI.add(tg_lines.setup("Draw Lines?", false));
 	GUI.add(tg_eyes.setup("Draw Eyes?", false));
+	GUI.add(tg_timer.setup("Use Timer?", false));
+
 
 
 }

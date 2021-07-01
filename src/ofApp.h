@@ -55,6 +55,11 @@ class ofApp : public ofBaseApp{
 		string				currentImagePath;
 		std::vector<ofColor>			blobColour;
 
+		float startTime; // store when we start time timer
+		float endTime; // when do want to stop the timer
+
+		bool  bTimerReached; // used as a trigger when we hit the timer
+
 		//-------------------------------------------------------------------------- GUI 
 		ofxPanel			GUI;
 
@@ -64,10 +69,12 @@ class ofApp : public ofBaseApp{
 		ofxIntSlider		sl_maxArea;
 		ofxIntSlider		sl_maxBlobs;
 		ofxIntSlider		sl_lineThickness;
+		ofxIntSlider		sl_timerSpeed;
 
 		ofxToggle			tg_holes;
 		ofxToggle			tg_lines;
 		ofxToggle			tg_eyes;
+		ofxToggle			tg_timer;
 
 
 
