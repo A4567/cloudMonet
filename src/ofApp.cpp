@@ -4,7 +4,7 @@
 void ofApp::setup()
 {
 	vimg.setup(1280, 960);
-	currentImagePath = "cloud3.jpg";
+	currentImagePath = "clouds3.jpg";
 	loadNewImage(currentImagePath);
 	
 
@@ -45,6 +45,15 @@ void ofApp::draw()
 			startTime = ofGetElapsedTimeMillis();
 			threshold = 0;
 		}
+
+		/*threshold = 255 - (ofGetElapsedTimeMillis() / sl_timerSpeed);
+		sl_threshold = threshold;
+
+		if (threshold <= 0)
+		{
+			startTime = 255 - ofGetElapsedTimeMillis();
+			threshold = 255;
+		}*/
 	}
 
 
@@ -405,7 +414,7 @@ void ofApp::findContours()
 void ofApp::setupGUI()
 {
 	GUI.setup();
-	GUI.add(sl_threshold.setup("Threshold", 200, 0, 255));
+	GUI.add(sl_threshold.setup("Threshold", 70, 0, 255));
 	GUI.add(sl_smoothness.setup("Smoothness", 1, 1, 500));
 	GUI.add(sl_minArea.setup("Min Area", 20, 0, 10000));
 	GUI.add(sl_maxArea.setup("Max Area", 10001, 10001, ofGetWidth() * ofGetHeight()));
